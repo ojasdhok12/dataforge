@@ -123,6 +123,51 @@
     </div>
   </div>
 
+  <div class="grid" style="margin-top:20px;">
+    <div class="card" style="grid-column:1/-1;">
+      <h2>3 · Connect to BDH — does a sparse, positive memory interfere differently?</h2>
+      <p style="font-size:13.5px;line-height:1.6;color:var(--text);margin:0 0 14px;">
+        Pathway's Dragon Hatchling (BDH) architecture stores its working
+        memory the same way as above — as an evolving matrix σ, updated by
+        outer-product-style Hebbian writes whenever two neurons fire
+        together — with no growing key-value cache at all. BDH's authors
+        cite the same fast-weight lineage this demo is built on. One
+        property that's different: BDH's own activation vectors are
+        confirmed (in the primary source) to be <b>sparse and positive</b>,
+        not dense and signed like the random vectors used above. Does that
+        change the interference story? The button below runs both versions
+        side by side, live, so you can see the answer rather than take our
+        word for it.
+      </p>
+      <div class="row">
+        <button class="btn-write" id="bdhAddBtn">Store a pair into BOTH memories</button>
+        <button class="btn-ghost" id="bdhResetBtn">Reset comparison</button>
+      </div>
+      <div class="compare-title" style="margin-top:16px;">Interference curve: standard (dense, signed) vs. BDH-style (sparse, positive)</div>
+      <svg id="bdhLineChart" width="100%" height="170" viewBox="0 0 700 170" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--write)"></span>standard (this demo's default vectors)</span>
+        <span><span class="dot" style="background:var(--query)"></span>BDH-style (sparse, positive, same dimension)</span>
+      </div>
+      <div class="note" id="bdhFinding">Run the experiment above to see the live result.</div>
+      <div class="note" style="border-top:none;padding-top:0;">
+        <b>Evidence level, stated plainly:</b> the sparse-positive generation
+        used here (take a random vector, zero out all but its largest 40%
+        of entries by magnitude, then clip to positive and normalize) is
+        <i>our own toy approximation</i> of BDH's activation constraint, run
+        in this demo — it is not a result copied from the BDH paper itself.
+        The paper's own Section 6.1 ("state capacity vs. distinction
+        capacity") addresses this question with the model's real
+        activations, not this simplification, and is the authoritative
+        source if you want the formal result. What this toy comparison
+        does honestly show is one plausible mechanism — sparsity reduces
+        how much any two random vectors overlap by default, which is the
+        same reason interference happens in the first place — reproduced
+        with real numbers rather than asserted.
+      </div>
+    </div>
+  </div>
+
   <div class="footer-band">Core substrate: live in-browser linear algebra, no training, no precomputation · Part of a DataForge 2026 Pathway Track submission</div>
 </div>
 
@@ -313,12 +358,108 @@
 
   // ---------- events ----------
   dimSlider.addEventListener('input', ()=>{ dimVal.textContent = dimSlider.value; });
-  dimSlider.addEventListener('change', ()=>{ init(parseInt(dimSlider.value,10)); });
+  dimSlider.addEventListener('change', ()=>{ init(parseInt(dimSlider.value,10)); if(typeof bdhInit === 'function') bdhInit(); });
   addBtn.addEventListener('click', ()=> storePair(true));
   resetBtn.addEventListener('click', ()=> init(d));
   queryPick.addEventListener('change', ()=>{ renderBarChart(); });
 
   init(d);
+
+  // ---------- BDH comparison module ----------
+  let S_std = zeros(d), S_bdh = zeros(d);
+  let pairs_std = [], pairs_bdh = [];
+  let bdhHistory = []; // {n, stdCos, bdhCos}
+
+  function sparsifyPositive(v, keepFraction){
+    const d = v.length;
+    const abs = v.map(Math.abs);
+    const sorted = abs.slice().sort((a,b)=>b-a);
+    const keepCount = Math.max(1, Math.round(d*keepFraction));
+    const threshold = sorted[keepCount-1];
+    const out = v.map((x,i)=> abs[i] >= threshold ? abs[i] : 0);
+    return normalize(out);
+  }
+
+  function bdhInit(){
+    S_std = zeros(d); S_bdh = zeros(d);
+    pairs_std = []; pairs_bdh = [];
+    bdhHistory = [];
+    document.getElementById('bdhFinding').textContent = 'Run the experiment above to see the live result.';
+    renderBdhChart();
+  }
+
+  function bdhStorePair(){
+    const cap = d*3;
+    if(pairs_std.length >= cap) return;
+    // standard: same generation as main demo
+    const k1 = normalize(randNormalVec(d)), v1 = normalize(randNormalVec(d));
+    outerAddInPlace(S_std, v1, k1);
+    pairs_std.push({key:k1, value:v1});
+    // bdh-style: sparse + positive keys and values
+    const k2 = sparsifyPositive(randNormalVec(d), 0.4);
+    const v2 = sparsifyPositive(randNormalVec(d), 0.4);
+    outerAddInPlace(S_bdh, v2, k2);
+    pairs_bdh.push({key:k2, value:v2});
+
+    let totalStd=0; for(const p of pairs_std) totalStd += cosine(matVec(S_std,p.key), p.value);
+    let totalBdh=0; for(const p of pairs_bdh) totalBdh += cosine(matVec(S_bdh,p.key), p.value);
+    bdhHistory.push({
+      n: pairs_std.length,
+      stdCos: totalStd/pairs_std.length,
+      bdhCos: totalBdh/pairs_bdh.length
+    });
+    renderBdhChart();
+  }
+
+  function renderBdhChart(){
+    const svg = document.getElementById('bdhLineChart');
+    const W=700,H=170,padL=34,padR=14,padT=14,padB=26;
+    const plotW=W-padL-padR, plotH=H-padT-padB;
+    let s = '';
+    [0,0.5,1].forEach(t=>{
+      const y = padT + plotH*(1-t);
+      s += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#2a2836" stroke-width="1"/>`;
+      s += `<text x="4" y="${y+4}" font-size="10" fill="#938d9c" font-family="JetBrains Mono, monospace">${t.toFixed(1)}</text>`;
+    });
+    if(bdhHistory.length>1){
+      const maxN = bdhHistory[bdhHistory.length-1].n;
+      const line = (key,color) => {
+        const pts = bdhHistory.map(h=>{
+          const x = padL + (h.n/maxN)*plotW;
+          const y = padT + plotH*(1-Math.max(0,Math.min(1,h[key])));
+          return x+','+y;
+        }).join(' ');
+        s += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+        bdhHistory.forEach(h=>{
+          const x = padL + (h.n/maxN)*plotW;
+          const y = padT + plotH*(1-Math.max(0,Math.min(1,h[key])));
+          s += `<circle cx="${x}" cy="${y}" r="3" fill="${color}"/>`;
+        });
+      };
+      line('stdCos','var(--write)');
+      line('bdhCos','var(--query)');
+    }
+    s += `<text x="${padL}" y="${H-6}" font-size="10" fill="#938d9c" font-family="JetBrains Mono, monospace">pairs stored →</text>`;
+    svg.innerHTML = s;
+
+    if(bdhHistory.length > 2){
+      const last = bdhHistory[bdhHistory.length-1];
+      const diff = last.bdhCos - last.stdCos;
+      let verdict;
+      if(Math.abs(diff) < 0.03){
+        verdict = `At n=${last.n} pairs, both curves sit close together (standard cos=${last.stdCos.toFixed(2)}, BDH-style cos=${last.bdhCos.toFixed(2)}) — in this run, the sparsity/positivity constraint alone isn't producing a large effect at this scale.`;
+      } else if(diff > 0){
+        verdict = `At n=${last.n} pairs, the BDH-style sparse-positive memory is retrieving more cleanly (cos=${last.bdhCos.toFixed(2)}) than the standard dense memory (cos=${last.stdCos.toFixed(2)}) — consistent with sparsity reducing accidental overlap between stored vectors.`;
+      } else {
+        verdict = `At n=${last.n} pairs, the standard dense memory is retrieving more cleanly (cos=${last.stdCos.toFixed(2)}) than the BDH-style sparse-positive one (cos=${last.bdhCos.toFixed(2)}) in this run — a reminder that this toy comparison doesn't always favor sparsity, and the real answer depends on details this simplification doesn't capture.`;
+      }
+      document.getElementById('bdhFinding').textContent = verdict;
+    }
+  }
+
+  document.getElementById('bdhAddBtn').addEventListener('click', bdhStorePair);
+  document.getElementById('bdhResetBtn').addEventListener('click', bdhInit);
+  bdhInit();
 })();
 </script>
 </body>
