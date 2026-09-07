@@ -1,11 +1,11 @@
 # Associative Memory in Fast-Weight Architectures
 ### DataForge 2026 — Pathway Track
 
-Status: Substrate, interactive artifact, and BDH connection module
-complete and validated. Narrative polish, inline citations, and blog post
-remaining. Timeline compressed to 3 days total (originally scoped as 7);
-this file is the spine of the submission and is updated as each stage
-completes.
+Status: All buildable components complete and validated — substrate,
+interactive artifact, BDH module, inline citations, blog post, precision/
+robustness pass, and all packaging (README, licenses, disclosures). Only
+two items remain, both requiring a human tester rather than more building:
+narrative playtesting and live-defense rehearsal.
 
 ## Public links
 
@@ -210,16 +210,39 @@ experiment live in-browser:
   positive activations) as confirmed directly from arXiv:2509.26507,
   Sections 1.2 and 6, per §3b above — not inferred or assumed.
 
-### 5.6 Remaining work
+### 5.6 Precision and robustness pass (complete)
 
-- [ ] Guided narrative pass: tighten the on-load walkthrough so a
-      first-time learner reaches the interference insight in under a
-      minute, and playtest with someone unfamiliar with the topic.
-- [ ] Inline citations placed next to specific technical claims in the
-      artifact and README prose, not only listed in the paper-trail
-      tables in §4/§4b.
-- [ ] Blog post (600–800 words, separate topic, exported as PDF).
-- [ ] Live-defense rehearsal.
+Before final packaging, every numeric display and edge case was reviewed:
+
+- **Edge cases stress-tested independently** (Node.js, outside the UI):
+  minimum dimension (d=4) at the maximum pair cap (12), maximum dimension
+  (d=12) at its cap (36 pairs), the sparse-positive generator at the
+  smallest dimension (confirming it never degenerates to a zero vector),
+  and single-pair queries across all supported dimensions (confirming
+  near-exact retrieval, cos > 0.999999, holds at every d). No NaNs,
+  divide-by-zero, or degenerate outputs found at any boundary.
+- **Display precision increased** from 2 to 4 decimal places on all
+  similarity scores and verdict text, for a closer match between what's
+  displayed and the underlying float64 computation.
+- **Exact values exposed on hover**: every heatmap cell, every bar, and
+  every chart point now carries a native tooltip with its precise
+  numeric value (`S[i][j] = ...`, `retrieved[i] = ...`, `avg cos = ...`),
+  strengthening the "visible state" design standard without adding any
+  new controls.
+
+
+
+### 5.7 Remaining work
+
+- [x] Inline citations placed next to specific technical claims in the
+      artifact prose (claim box and BDH module both now cite specific
+      papers inline, not just in the §4/§4b tables).
+- [x] Blog post (776 words, separate topic, exported as PDF).
+- [ ] Guided narrative playtest: the on-load walkthrough has not yet been
+      tested on someone unfamiliar with the topic. This requires a human
+      tester and cannot be completed without your team's action.
+- [ ] Live-defense rehearsal: requires your team, not something that can
+      be completed in advance.
 
 ## 7. Setup and reproduction instructions
 
@@ -311,14 +334,27 @@ confirms the sparse-positive memory retrieves more cleanly at scale,
 directionally consistent with intuition, explicitly labeled as a toy
 approximation rather than a paper-sourced number).
 
-**Submission packaging (drafted, pending your action):** setup/reproduction
-instructions, source and license record, and AI-assistance disclosure are
-now written into this README (§7–§9). Two checklist items cannot be
-completed without your action, since they require your own accounts:
-a public hosting URL for the artifact (no sign-in required) and a public
-GitHub repository. **Both are now live** — see Public Links above.
+**Inline citations (complete):** the artifact's own prose — not just the
+README's paper-trail tables — now cites specific papers next to the
+specific claims they support (claim box cites Irie et al. 2022 and Yang
+et al.'s DeltaNet 2024; BDH module cites Kosowski et al. 2025 by section).
 
-**Remaining:** narrative playtest and polish, blog post (including its
-own PDF export), inline citations placed beside specific technical claims
-in the README/artifact prose (not just listed in the paper-trail tables
-above), live-defense rehearsal.
+**Blog post (complete):** 776 words on "Observability Constraints in
+Latent Reasoning Systems," distinct from the main topic. Both cited papers
+were fact-checked against their actual abstracts after drafting, and one
+mischaracterization was caught and corrected before finalizing. Includes a
+real, verified statistic (13 percentage points, 13 frontier models) rather
+than a vague qualitative claim. Exported as `blog_post.pdf`.
+
+**Precision and robustness pass (complete):** see §5.6 above — edge cases
+stress-tested independently, display precision increased, exact values
+now exposed on hover throughout.
+
+**Submission packaging (complete):** setup/reproduction instructions,
+source and license record, and AI-assistance disclosure are written into
+this README (§7–§9). Public artifact URL and public GitHub repository are
+both live — see Public Links above.
+
+**Remaining — requires your team, not more building:** narrative
+playtest with someone unfamiliar with the topic, and live-defense
+rehearsal.
