@@ -9,7 +9,7 @@ narrative playtesting and live-defense rehearsal.
 
 ## Public links
 
-- **Live artifact:** `https://ojasdhok12.github.io/dataforge/` (will go live once GitHub Pages is enabled — see instructions below)
+- **Live artifact:** `https://ojasdhok12.github.io/dataforge/` 
 - **Source repository:** `https://github.com/ojasdhok12/dataforge`
 
 ---
