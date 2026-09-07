@@ -1,10 +1,11 @@
 # Associative Memory in Fast-Weight Architectures
 ### DataForge 2026 — Pathway Track
 
-Status: Substrate and interactive artifact complete and validated. BDH
-module and narrative polish in progress. Timeline compressed to 3 days
-total (originally scoped as 7); this file is the spine of the submission
-and is updated as each stage completes.
+Status: Substrate, interactive artifact, and BDH connection module
+complete and validated. Narrative polish, inline citations, and blog post
+remaining. Timeline compressed to 3 days total (originally scoped as 7);
+this file is the spine of the submission and is updated as each stage
+completes.
 
 ## Public links
 
@@ -81,11 +82,17 @@ summary. Key facts confirmed, to build the module on:
   picture — likely the best section to anchor the "same mechanism, two
   scales" narrative beat.
 
-Open item, still unresolved: confirm whether BDH's positive-activation
-constraint (ReLU, sparse, positive-only) changes the interference story
-qualitatively versus our demo's unconstrained random vectors, or just
-quantitatively. Not to be assumed — must be checked against the section
-before the module claims equivalence.
+**Resolved via our own live experiment (see §5.5 below), not assumed:** a
+100-trial simulation comparing standard dense/signed memory against a toy
+sparse-positive approximation of BDH's activation constraint shows the
+sparse-positive version retrieves *more* cleanly as memory fills (e.g. at
+19 stored pairs, d=8: standard cos≈0.55 vs. sparse-positive cos≈0.69).
+This is directionally consistent with the intuition that sparsity reduces
+accidental overlap between stored vectors. Important caveat, stated
+plainly: this is our own toy approximation built for this demo, not a
+number taken from the BDH paper. The paper's own Section 6.1 addresses
+the formal version of this question with the model's real activations and
+remains the authoritative source.
 
 ## 4. Primary paper trail (2022–2026)
 
@@ -179,15 +186,40 @@ considered trustworthy:
    default range (d capped at 4–12, up to 3d pairs) sits inside the same
    regime that was validated.
 
-### 5.4 Remaining work
+### 5.5 BDH connection module (complete)
 
-- [ ] BDH module: connect the validated substrate to BDH's σ(i,j) synaptic
-      memory, grounded in Section 6 of the primary source (see §3b above).
+Woven directly into the artifact as Section 3, immediately below the core
+memory demo, rather than appended at the end. Runs a second, parallel
+experiment live in-browser:
+
+- A "standard" memory (identical to the core demo's dense, signed random
+  vectors) and a "BDH-style" memory (vectors sparsified to their largest
+  40% of entries by magnitude, then clipped to positive and normalized —
+  a toy approximation of BDH's confirmed sparse-positive activations) are
+  updated together on every click, using the same outer-product write rule
+  in both.
+- Both memories' interference curves are plotted on one chart, in real
+  time, so the learner sees the comparison rather than reading a claim
+  about it.
+- A live text verdict is generated from the actual numbers produced in
+  that specific run (not a canned string), and is prefixed with an
+  explicit statement that this is a toy approximation, distinct from the
+  BDH paper's own formal treatment in Section 6.1.
+- Grounding: the module's prose cites BDH's specific properties (evolving
+  synaptic matrix σ, Hebbian co-activation updates, no KV cache, sparse
+  positive activations) as confirmed directly from arXiv:2509.26507,
+  Sections 1.2 and 6, per §3b above — not inferred or assumed.
+
+### 5.6 Remaining work
+
 - [ ] Guided narrative pass: tighten the on-load walkthrough so a
       first-time learner reaches the interference insight in under a
       minute, and playtest with someone unfamiliar with the topic.
-- [ ] Final packaging: README completion (this document), blog post,
-      license/source disclosure table, and AI-assistance disclosure.
+- [ ] Inline citations placed next to specific technical claims in the
+      artifact and README prose, not only listed in the paper-trail
+      tables in §4/§4b.
+- [ ] Blog post (600–800 words, separate topic, exported as PDF).
+- [ ] Live-defense rehearsal.
 
 ## 7. Setup and reproduction instructions
 
@@ -273,17 +305,20 @@ and validated per §5.3 above. Every control maps to a real variable; no
 precomputation or animation stands in for computation anywhere in the
 core artifact.
 
+**BDH connection module (complete):** live dense-vs-sparse-positive
+comparison built and validated per §5.5 above (100-trial simulation
+confirms the sparse-positive memory retrieves more cleanly at scale,
+directionally consistent with intuition, explicitly labeled as a toy
+approximation rather than a paper-sourced number).
+
 **Submission packaging (drafted, pending your action):** setup/reproduction
 instructions, source and license record, and AI-assistance disclosure are
 now written into this README (§7–§9). Two checklist items cannot be
 completed without your action, since they require your own accounts:
 a public hosting URL for the artifact (no sign-in required) and a public
-GitHub repository. Recommend GitHub Pages or Netlify for hosting, either
-of which serves this artifact with zero build step, since it's a single
-static HTML file.
+GitHub repository. **Both are now live** — see Public Links above.
 
-**Remaining:** BDH module, narrative playtest and polish, blog post
-(including its own PDF export), inline citations placed beside specific
-technical claims in the README/artifact prose (not just listed in the
-paper-trail tables above), public repo and hosting setup, live-defense
-rehearsal.
+**Remaining:** narrative playtest and polish, blog post (including its
+own PDF export), inline citations placed beside specific technical claims
+in the README/artifact prose (not just listed in the paper-trail tables
+above), live-defense rehearsal.
